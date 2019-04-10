@@ -118,8 +118,7 @@ def wrapper_subconj_kbest(data, k=20):
     X = X.drop('SalePrice', axis=1)
     y = data['SalePrice']
     x_new = SelectKBest(chi2, k).fit_transform(X, y)
-    print(x_new.shape)
-    return x_new
+    return x_new, y
 
 
 def remove_redundant(data):
@@ -185,7 +184,12 @@ def main():
     data_new = transform_to_numeric(data_new)
     # print(data_new.head())
 
+    # wrapper rfe
     data_x, data_y = wrapper_rfe(data_new)
+    print(data_x.shape, data_y.shape)
+
+    # wrapper subconjunto
+    data_x, data_y = wrapper_subconj_kbest(data_new)
     print(data_x.shape, data_y.shape)
 
 
