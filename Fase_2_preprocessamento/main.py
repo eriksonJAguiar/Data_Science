@@ -140,6 +140,7 @@ def remove_redundant(data):
 
 
 def transform_to_numeric(data, should_remove_redundant=False):
+
     if should_remove_redundant:
         data = remove_redundant(data)
 
@@ -261,13 +262,32 @@ def run_model_on_wrapper_subconj_kbest(model, data, test):
     return predictions
 
 
-def main():
-    data = pd.read_csv("train.csv")
-    data_copy = data
+def run_model_no_filter_no_wrapper(model, data, test):
 
+    data = remove_redundant(data)
+    data = transform_to_numeric(data)
+    test = remove_redundant(test)
+    test = transform_to_numeric(test)
+
+    data_y = data['SalePrice']
+    data = data.drop(['SalePrice'], axis=1)
+
+    model.fit(data, data_y)
+
+    test = test.drop(['Id'], axis=1)
+    print(data.shape)
+    print(test.shape)
+
+    predictions = model.predict(test)
+
+    return predictions
+
+
+def main():
+
+    data = pd.read_csv("train.csv")
     test = pd.read_csv('test.csv')
     test_ids = test['Id']
-
     data = data.drop(columns='Id')
     print('Train shape:', data.shape)
 
@@ -281,6 +301,11 @@ def main():
         min_samples_split=10,
         loss='huber',
         random_state=5)
+
+    predictions = run_model_on_filters(clone(model), data, test, nan_filter=True)
+    submission = pd.DataFrame({'Id': test_ids, 'Saleprice': predictions})
+    submission.to_csv('submissions/nan_filter_submission.csv', index=False)
+    print('Nan Filter - Submission file successfully created!')
 
     # NaN Filter
     predictions = run_model_on_filters(clone(model), data, test, nan_filter=True)
@@ -301,10 +326,11 @@ def main():
     print('Unbalanced Filter - Submission file successfully created!')
 
     # All Filters
-    predictions = run_model_on_filters(clone(model), data, test, nan_filter=True, corr_filter=True, unbalanced_filter=True)
+    predictions = run_model_on_filters(clone(model), data, test, nan_filter=True, corr_filter=True,
+                                       unbalanced_filter=True)
     submission = pd.DataFrame({'Id': test_ids, 'Saleprice': predictions})
     submission.to_csv('submissions/all_filters_submission.csv', index=False)
-    print('Nan Filter - Submission file successfully created!')
+    print('All Filters - Submission file successfully created!')
 
     # Wrapper rfe
     predictions = run_model_on_rfe_wrapper(clone(model), data, test)
@@ -317,6 +343,12 @@ def main():
     submission = pd.DataFrame({'Id': test_ids, 'Saleprice': predictions})
     submission.to_csv('submissions/KBest_wrapper_submission.csv', index=False)
     print('KBest Wrapper: - Submission file successfully created!')
+
+    # No filter no wrapper
+    predictions = run_model_no_filter_no_wrapper(clone(model), data, test)
+    submission = pd.DataFrame({'Id': test_ids, 'Saleprice': predictions})
+    submission.to_csv('submissions/no_filter_wrapper_submission.csv', index=False)
+    print('No Filter no Wrapper - Submission file successfully created!')
 
 
 if __name__ == '__main__':
