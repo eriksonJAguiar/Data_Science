@@ -300,6 +300,12 @@ def main():
     submission.to_csv('submissions/unbalanced_filter_submission.csv', index=False)
     print('Unbalanced Filter - Submission file successfully created!')
 
+    # All Filters
+    predictions = run_model_on_filters(clone(model), data, test, nan_filter=True, corr_filter=True, unbalanced_filter=True)
+    submission = pd.DataFrame({'Id': test_ids, 'Saleprice': predictions})
+    submission.to_csv('submissions/all_filters_submission.csv', index=False)
+    print('Nan Filter - Submission file successfully created!')
+
     # Wrapper rfe
     predictions = run_model_on_rfe_wrapper(clone(model), data, test)
     submission = pd.DataFrame({'Id': test_ids, 'Saleprice': predictions})
