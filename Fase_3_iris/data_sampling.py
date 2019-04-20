@@ -68,10 +68,15 @@ def cross_validation(data, r):
 
 
 def leave_one_out(data):
+    sample = {}
+    sample[0] = []
     
     train, test = train_test_split(data, test_size = 1)
     
-    return train, test
+    sample[0].append(train)
+    sample[0].append(test)
+    
+    return sample
 
 
 # In[477]:
